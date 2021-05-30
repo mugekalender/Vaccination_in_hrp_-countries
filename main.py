@@ -5,17 +5,29 @@ import geopandas as gpd
 
 
 def forecasted_vaccination(data_df):
+    """
+    calculate % of the forecasted COVAX vaccination distribution per population
+    use only 2 decimals
+    """
     data_df['forecasted_vaccination'] = round(data_df['covax forecast total'] / data_df['population (undesa)'] * 100, 2)
 
 
 def delivered_forecasted(data_df):
+    """
+    calculate % of the delivered COVAX vaccines / forecasted
+    """
     data_df['delivered_forecasted'] = round(data_df['covax delivered'] / data_df['covax forecast total'] * 100, 2)
 
 
 def delivered_in_population(data_df):
+    """
+    calculate % population covered
+    consider one dose only
+    """
     data_df['delivered_in_population'] = round(data_df['total delivered'] / data_df['population (undesa)'] * 100, 2)
 
 
+# main function
 if __name__ == '__main__':
     data_file = "data/vaccine_in_hrp_countries.csv"
     col_types = {
@@ -35,6 +47,7 @@ if __name__ == '__main__':
         "(DEPRECATAED) Other Delivered Source URLs": str
     }
 
+    # column headers with lower cases
     data = pd.read_csv(data_file, dtype=col_types)
     data.columns = [cc.lower() for cc in data.columns]
     data.head(27)
@@ -55,12 +68,13 @@ if __name__ == '__main__':
     print("Geo data:")
     print(geo_data.head())
 
+    # merge csv data and json file on key column iso_a3
     final_data = geo_data.merge(data, on="iso_a3")
     print("")
     print("Final data:")
     print(final_data.head())
 
-    # Setup a folium map
+    # Setup a folium map based on merged dataset
     hrp_map: Map = folium.Map(location=[20, 80], zoom_start=2.5, min_zoom=2, max_bounds=True, tiles='cartodbpositron')
     choropleth = folium.Choropleth(
         geo_data=final_data,
@@ -73,6 +87,7 @@ if __name__ == '__main__':
         line_opacity=0.2,
         legend_name="Population Covered (One Dose) %"
     ).add_to(hrp_map)
+    # Create info labels for each country
     choropleth.geojson.add_child(
         folium.features.GeoJsonTooltip(
             ['iso_a3', 'population (undesa)', 'covax forecast total', 'forecasted_vaccination',
@@ -87,6 +102,3 @@ if __name__ == '__main__':
 
     folium.LayerControl().add_to(hrp_map)
     hrp_map.save('out/hrp_map.html')
-
-    data = data[['iso_a3', 'delivered_in_population']]
-    data.head()
