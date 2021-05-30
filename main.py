@@ -59,23 +59,15 @@ if __name__ == '__main__':
         data=data,
         columns=['iso_a3', 'delivered_in_population', 'population'],  # 'population (undesa)', 'forecasted_vaccination', 'delivered_forecasted',
         key_on='properties.iso_a3',
-        fill_color='YlOrRd',
+        fill_color='RdYlGn',
+        bins=[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
         fill_opacity=0.5,
         line_opacity=0.2,
         legend_name="Population Covered (One Dose)"
     ).add_to(hrp_map)
     choropleth.geojson.add_child(
-        folium.features.GeoJsonTooltip(['iso_a3', ',' 'pop_est'], labels=False)
+        folium.features.GeoJsonTooltip(['iso_a3', 'pop_est'], labels=False)
     )
 
     folium.LayerControl().add_to(hrp_map)
     hrp_map.save('out/hrp_map.html')
-
-
-
-
-
-
-
-
-
